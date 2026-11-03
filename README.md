@@ -59,9 +59,11 @@ TradeMind AI/
 ## 🚀 Incremental Roadmap
 
 - [x] **Phase 1: Project Setup & Environment Configuration** *(Completed)*
-- [ ] **Phase 2: Upstox OAuth 2.0 Authentication**
-- [ ] **Phase 3: Connect Upstox Market Data Feed V3**
-- [ ] **Phase 4: Receive & Decode Live NIFTY Market Data**
+- [x] **Phase 2: Upstox OAuth 2.0 Authentication** *(Completed)*
+- [x] **Phase 3: Connect Upstox Market Data Feed V3** *(Completed)*
+- [x] **Phase 4: Receive & Decode Live NIFTY Market Data** *(Completed)*
+- [x] **Phase 5: Integrate Option Chain API** *(Completed)*
+- [ ] **Phase 6: Build React Dashboard & Charts**
 - [ ] **Phase 5: Integrate Option Chain API**
 - [ ] **Phase 6: Build React Dashboard & Charts**
 - [ ] **Phase 7: Implement Technical Indicators**
@@ -100,4 +102,39 @@ npm run dev
 # App will run on http://localhost:5173
 ```
 
-Open `http://localhost:5173` in your browser. The dashboard automatically monitors the backend connection and MongoDB health status.
+### 3. Verify Phase 2 Authentication Suite
+Run the automated end-to-end authentication test script:
+```bash
+cd backend
+node src/testAuth.js
+```
+
+### 4. Verify Phase 3 Market Data Feed V3 & Protobuf Suite
+Run the automated Protobuf compilation, binary round-trip, and stream verification test script:
+```bash
+cd backend
+node src/testFeed.js
+```
+
+### 5. Verify Phase 4 Live Market Data & Candle Engine Suite
+Run the automated candlestick aggregator, 5-level order book, and depth verification test script:
+```bash
+cd backend
+node src/testCandles.js
+```
+
+### 6. Verify Phase 5 Option Chain Engine Suite
+Run the automated Option Chain matrix, Greeks, PCR, and Max Pain verification test script:
+```bash
+cd backend
+node src/testOptionChain.js
+```
+The test verifies:
+- Weekly option expiry dates calculation for NIFTY (Thursdays) and BANKNIFTY (Wednesdays)
+- 21-strike Option Chain matrix generation centered around current spot price
+- Black-Scholes Greeks computation (Delta, Gamma, Theta, Vega, and IV)
+- Quantitative Put-Call Ratio (PCR) and sentiment analysis
+- Max Pain Strike and Major Support (Max Put OI) & Resistance (Max Call OI) detection
+- REST endpoints: `GET /api/v1/options/chain`, `GET /api/v1/options/expiries`, `GET /api/v1/options/analytics`
+
+Open `http://localhost:5173` in your browser. Click the **"Option Chain"** tab in the sidebar to view the full interactive matrix with ATM strike highlighting, Greeks, and visual Open Interest accumulation bars!

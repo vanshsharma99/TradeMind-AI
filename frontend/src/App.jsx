@@ -15,6 +15,10 @@ import {
   ArrowUpRight,
   Sparkles
 } from 'lucide-react';
+import BrokerConnectionCard from './components/BrokerConnectionCard.jsx';
+import MarketFeedStatusCard from './components/MarketFeedStatusCard.jsx';
+import LiveMarketView from './components/LiveMarketView.jsx';
+import OptionChainView from './components/OptionChainView.jsx';
 
 export default function App() {
   const [healthData, setHealthData] = useState(null);
@@ -51,8 +55,8 @@ export default function App() {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3, status: 'Active (Phase 1)' },
-    { id: 'live-market', label: 'Live Market', icon: TrendingUp, status: 'Phase 3-4' },
-    { id: 'option-chain', label: 'Option Chain', icon: Layers, status: 'Phase 5' },
+    { id: 'live-market', label: 'Live Market', icon: TrendingUp, status: 'Active (Phase 4)' },
+    { id: 'option-chain', label: 'Option Chain', icon: Layers, status: 'Active (Phase 5)' },
     { id: 'ai-signals', label: 'AI Signals', icon: Sparkles, status: 'Phase 8' },
     { id: 'paper-trading', label: 'Paper Trading', icon: Activity, status: 'Phase 10' },
   ];
@@ -68,8 +72,8 @@ export default function App() {
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-xl font-bold tracking-tight text-white">TradeMind<span className="text-blue-500">.AI</span></span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                Phase 1 Active
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                Phase 5 Operational
               </span>
             </div>
             <p className="text-xs text-slate-400">AI-Powered Options Trading & Quantitative Analytics</p>
@@ -157,8 +161,14 @@ export default function App() {
 
         {/* Dashboard Workspace */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
-          {/* Welcome Banner */}
-          <div className="rounded-2xl bg-gradient-to-r from-blue-950/40 via-[#121829] to-[#0E121B] border border-blue-900/30 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          {activeTab === 'live-market' ? (
+            <LiveMarketView />
+          ) : activeTab === 'option-chain' ? (
+            <OptionChainView />
+          ) : (
+            <>
+              {/* Welcome Banner */}
+              <div className="rounded-2xl bg-gradient-to-r from-blue-950/40 via-[#121829] to-[#0E121B] border border-blue-900/30 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium mb-3">
                 <Sparkles className="h-3 w-3" />
@@ -265,6 +275,12 @@ export default function App() {
             </div>
           </div>
 
+          {/* Upstox Broker OAuth Connection Gateway (Phase 2) */}
+          <BrokerConnectionCard />
+
+          {/* Upstox Market Data Feed V3 Protobuf Stream (Phase 3) */}
+          <MarketFeedStatusCard />
+
           {/* Health Diagnostics Output / Details */}
           <div className="bg-[#121721] border border-[#1E2638] rounded-xl p-6 space-y-4">
             <div className="flex items-center justify-between">
@@ -310,11 +326,11 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 { phase: 'Phase 1', title: 'Project Setup & Health Verification', status: 'completed', desc: 'MERN scaffold, Express health check, Tailwind UI' },
-                { phase: 'Phase 2', title: 'Upstox OAuth 2.0 Authentication', status: 'next', desc: 'Secure token exchange, session storage, refresh cycles' },
-                { phase: 'Phase 3', title: 'Upstox Market Data Feed V3', status: 'pending', desc: 'WebSocket connection, Protobuf schema decoder' },
-                { phase: 'Phase 4', title: 'Live NIFTY Market Data Streaming', status: 'pending', desc: 'Tick decoding, real-time broadcasting to client' },
-                { phase: 'Phase 5', title: 'Option Chain Integration', status: 'pending', desc: 'Greeks, PCR, strike-wise Open Interest analysis' },
-                { phase: 'Phase 6', title: 'TradingView Charts & Full UI', status: 'pending', desc: 'Lightweight charts, orderbook depth, dark theme UI' },
+                { phase: 'Phase 2', title: 'Upstox OAuth 2.0 Authentication', status: 'completed', desc: 'Secure token exchange, session storage, refresh cycles' },
+                { phase: 'Phase 3', title: 'Upstox Market Data Feed V3', status: 'completed', desc: 'WebSocket connection, Protobuf schema decoder' },
+                { phase: 'Phase 4', title: 'Live NIFTY Market Data Streaming', status: 'completed', desc: 'Tick decoding, real-time broadcasting to client' },
+                { phase: 'Phase 5', title: 'Option Chain Integration', status: 'completed', desc: 'Greeks, PCR, strike-wise Open Interest analysis' },
+                { phase: 'Phase 6', title: 'TradingView Charts & Full UI', status: 'next', desc: 'Lightweight charts, orderbook depth, dark theme UI' },
                 { phase: 'Phase 7', title: 'Technical Indicators (Python/JS)', status: 'pending', desc: 'RSI, EMA 9/21, VWAP, MACD, Volume Profile' },
                 { phase: 'Phase 8', title: 'AI Decision Engine', status: 'pending', desc: 'Deterministic signal rules + AI contextual explanations' },
                 { phase: 'Phase 9', title: 'Backtesting Engine', status: 'pending', desc: 'Historical simulation and win-rate validation' },
@@ -349,6 +365,8 @@ export default function App() {
               ))}
             </div>
           </div>
+          </>
+          )}
         </main>
       </div>
     </div>

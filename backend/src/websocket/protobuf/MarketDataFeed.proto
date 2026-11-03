@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package com.upstox.marketdatafeeder.rpc.proto;
+
+enum Type {
+  initial_feed = 0;
+  live_feed = 1;
+}
+
+message FeedResponse {
+  Type type = 1;
+  map<string, Feed> feeds = 2;
+  int64 currentTs = 3;
+}
+
+message Feed {
+  oneof FeedUnion {
+    LTPC ltpc = 1;
+    FullFeed fullFeed = 2;
+    OptionGreeks optionGreeks = 3;
+  }
+}
+
+message LTPC {
+  double ltp = 1;
+  int64 ltt = 2;
+  int64 ltq = 3;
+  double cp = 4;
+}
+
+message FullFeed {
+  oneof FullFeedUnion {
+    MarketFullFeed marketFF = 1;
+    IndexFullFeed indexFF = 2;
+  }
+}
+
+message IndexFullFeed {
+  LTPC ltpc = 1;
+  MarketOHLC marketOHLC = 2;
+  int64 timestamp = 3;
+}
+
+message MarketFullFeed {
+  LTPC ltpc = 1;
+  MarketLevel marketLevel = 2;
+  MarketOHLC marketOHLC = 3;
+  EODOHLC eodOHLC = 4;
+  double oi = 5;
+  double oiDayHigh = 6;
+  double oiDayLow = 7;
+  int64 volume = 8;
+  int64 timestamp = 9;
+}
+
+message MarketOHLC {
+  repeated OHLC ohlc = 1;
+}
+
+message OHLC {
+  string interval = 1;
+  double open = 2;
+  double high = 3;
+  double low = 4;
+  double close = 5;
+  int32 volume = 6;
+  int64 ts = 7;
+}
+
+message EODOHLC {
+  double open = 1;
+  double high = 2;
+  double low = 3;
+  double close = 4;
+}
+
+message MarketLevel {
+  repeated Quote bidAskQuote = 1;
+}
+
+message Quote {
+  int32 bidQty = 1;
+  double bidPrice = 2;
+  int32 askQty = 3;
+  double askPrice = 4;
+}
+
+message OptionGreeks {
+  double delta = 1;
+  double gamma = 2;
+  double theta = 3;
+  double vega = 4;
+  double rho = 5;
+  double iv = 6;
+}

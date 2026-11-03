@@ -1,4 +1,4 @@
-import app from './server.js';
+import app, { stopServer } from './server.js';
 import mongoose from 'mongoose';
 
 const test = async () => {
@@ -21,8 +21,8 @@ const test = async () => {
     console.error('❌ Health check request failed:', err.message);
     process.exit(1);
   } finally {
+    await stopServer();
     await mongoose.disconnect();
-    process.exit(0);
   }
 };
 

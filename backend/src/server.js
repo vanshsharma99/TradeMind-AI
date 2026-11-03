@@ -1,8 +1,14 @@
 import express from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import { config } from './config/env.js';
 import { connectDB } from './config/db.js';
 import healthRoutes from './routes/healthRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import marketRoutes from './routes/marketRoutes.js';
+import optionRoutes from './routes/optionRoutes.js';
+import { initSocketServer, stopSocketServer } from './websocket/socketServer.js';
+import { marketDataFeedService } from './services/marketDataFeedService.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -25,6 +31,9 @@ if (config.nodeEnv === 'development') {
 
 // Routes
 app.use('/api', healthRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/market', marketRoutes);
+app.use('/api/v1/options', optionRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -39,18 +48,29 @@ app.get('/', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
+let httpServer = null;
+
 // Start Server
-const startServer = async () => {
+export const startServer = async () => {
   // Connect Database
   await connectDB();
 
-  const server = app.listen(config.port, () => {
+  httpServer = createServer(app);
+
+  // Initialize Socket.IO server
+  initSocketServer(httpServer);
+
+  const server = httpServer.listen(config.port, async () => {
     console.log(`\n=================================================`);
     console.log(`🚀 TradeMind AI Backend Server Started`);
     console.log(`📡 URL: http://localhost:${config.port}`);
     console.log(`🩺 Health Check: http://localhost:${config.port}/api/health`);
+    console.log(`⚡ WebSocket Feed V3: Active`);
     console.log(`⚙️  Environment: ${config.nodeEnv}`);
     console.log(`=================================================\n`);
+
+    // Launch market data streaming service
+    await marketDataFeedService.startFeed();
   });
 
   // Handle unhandled promise rejections
@@ -61,6 +81,21 @@ const startServer = async () => {
   return server;
 };
 
-startServer();
+export const stopServer = async () => {
+  marketDataFeedService.stopFeed();
+  await stopSocketServer();
+  if (httpServer) {
+    await new Promise((resolve) => httpServer.close(resolve));
+    httpServer = null;
+  }
+};
+
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const isDirectRun = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (isDirectRun) {
+  startServer();
+}
 
 export default app;
