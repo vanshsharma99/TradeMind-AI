@@ -1,0 +1,30 @@
+{
+  "name": "trademind-ai-backend",
+  "version": "1.0.0",
+  "description": "Backend API service for TradeMind AI options analysis and trading platform",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": [
+    "options-trading",
+    "upstox",
+    "algorithmic-trading",
+    "nifty",
+    "banknifty",
+    "fintech"
+  ],
+  "author": "TradeMind AI Team",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
