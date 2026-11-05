@@ -17,10 +17,10 @@ export const getOptionChain = async (req, res) => {
   }
 };
 
-export const getAvailableExpiries = (req, res) => {
+export const getAvailableExpiries = async (req, res) => {
   try {
     const { symbol = 'NSE_INDEX|Nifty 50' } = req.query;
-    const expiries = optionChainService.getAvailableExpiries(symbol);
+    const expiries = await optionChainService.getAvailableExpiries(symbol);
 
     return res.status(200).json({
       success: true,

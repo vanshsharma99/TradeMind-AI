@@ -1,8 +1,10 @@
 import { startServer, stopServer } from './server.js';
+import { connectDB } from './config/db.js';
 import mongoose from 'mongoose';
 import { optionChainService } from './services/optionChainService.js';
 
 const runOptionChainTests = async () => {
+  await connectDB();
   let startedByTest = false;
 
   try {
@@ -29,7 +31,7 @@ const runOptionChainTests = async () => {
 
     // Test 1: Available Expiries
     console.log('[Test 1] Testing expiry dates generator...');
-    const expiries = optionChainService.getAvailableExpiries('NSE_INDEX|Nifty 50');
+    const expiries = await optionChainService.getAvailableExpiries('NSE_INDEX|Nifty 50');
     console.log('Available Expiries for NIFTY:', expiries);
     if (!Array.isArray(expiries) || expiries.length < 2) {
       throw new Error('Failed to generate weekly option expiries');
@@ -104,8 +106,8 @@ const runOptionChainTests = async () => {
   } finally {
     if (startedByTest) {
       await stopServer();
-      await mongoose.disconnect();
     }
+    await mongoose.disconnect();
   }
 };
 

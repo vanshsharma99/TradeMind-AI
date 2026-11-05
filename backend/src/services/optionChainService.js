@@ -10,12 +10,43 @@ class OptionChainService {
 
   /**
    * Generates upcoming weekly expiry dates for NIFTY and BANKNIFTY
+   * Fetches real live contract expiries from Upstox when authenticated
    */
-  getAvailableExpiries(symbol = 'NSE_INDEX|Nifty 50') {
+  async getAvailableExpiries(symbol = 'NSE_INDEX|Nifty 50') {
+    const validSymbol = symbol.includes('Bank') ? 'NSE_INDEX|Nifty Bank' : 'NSE_INDEX|Nifty 50';
+
+    try {
+      const activeAuth = await UpstoxAuth.getActiveAuth();
+      if (activeAuth && !activeAuth.isSimulated && activeAuth.accessToken) {
+        const cacheKey = `expiries_${validSymbol}`;
+        const cached = this.cache.get(cacheKey);
+        if (cached && Date.now() - cached.timestamp < 3600000) {
+          return cached.data;
+        }
+
+        const res = await axios.get('https://api.upstox.com/v2/option/contract', {
+          params: { instrument_key: validSymbol },
+          headers: { Authorization: `Bearer ${activeAuth.accessToken}` },
+          timeout: 8000,
+        });
+
+        if (res.data?.data && Array.isArray(res.data.data)) {
+          const uniqueExpiries = [...new Set(res.data.data.map((c) => c.expiry))].sort();
+          if (uniqueExpiries.length > 0) {
+            const nextExpiries = uniqueExpiries.slice(0, 5);
+            this.cache.set(cacheKey, { timestamp: Date.now(), data: nextExpiries });
+            return nextExpiries;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`[Option Expiries Notice] ${err.message}. Using calendar fallback.`);
+    }
+
     const expiries = [];
     const now = new Date();
     // In India: NIFTY options expire on Thursdays, BANKNIFTY options expire on Wednesdays
-    const targetDay = symbol.toLowerCase().includes('bank') ? 3 : 4; // 3 = Wed, 4 = Thu
+    const targetDay = validSymbol.includes('Bank') ? 3 : 4; // 3 = Wed, 4 = Thu
 
     let cursor = new Date(now);
 
@@ -214,12 +245,12 @@ class OptionChainService {
    */
   async getOptionChain(symbol = 'NSE_INDEX|Nifty 50', expiryDate = null) {
     const validSymbol = symbol.includes('Bank') ? 'NSE_INDEX|Nifty Bank' : 'NSE_INDEX|Nifty 50';
-    const expiries = this.getAvailableExpiries(validSymbol);
-    const targetExpiry = expiryDate || expiries[0];
+    const expiries = await this.getAvailableExpiries(validSymbol);
+    const targetExpiry = expiryDate && expiries.includes(expiryDate) ? expiryDate : expiries[0];
 
     // Get current spot price from live feed service
     const latestTick = marketDataFeedService.latestTicks.get(validSymbol);
-    const spotPrice = latestTick?.ltp || (validSymbol.includes('Bank') ? 52180.25 : 24530.50);
+    let spotPrice = latestTick?.ltp || (validSymbol.includes('Bank') ? 52180.25 : 24530.50);
 
     const cacheKey = `${validSymbol}_${targetExpiry}`;
     const cached = this.cache.get(cacheKey);
@@ -245,7 +276,12 @@ class OptionChainService {
           timeout: 8000,
         });
 
-        if (response.data?.data && Array.isArray(response.data.data)) {
+        if (response.data?.data && Array.isArray(response.data.data) && response.data.data.length > 0) {
+          // Use real live underlying spot price reported by Upstox
+          if (response.data.data[0]?.underlying_spot_price) {
+            spotPrice = response.data.data[0].underlying_spot_price;
+          }
+
           // Normalize Upstox API response
           const liveStrikes = response.data.data.map((item) => ({
             strikePrice: item.strike_price,
@@ -267,7 +303,18 @@ class OptionChainService {
             },
           }));
 
+          // Comprehensive market-wide analytics across all active strikes
           const analytics = this.calculateAnalytics(liveStrikes, spotPrice);
+
+          // Center visible strikes around ATM for optimal UI responsiveness
+          const step = validSymbol.includes('Bank') ? 100 : 50;
+          const atmStrike = Math.round(spotPrice / step) * step;
+          const centeredStrikes = liveStrikes
+            .filter((s) => Math.abs(s.strikePrice - atmStrike) <= 12 * step)
+            .sort((a, b) => a.strikePrice - b.strikePrice);
+
+          const displayStrikes = centeredStrikes.length >= 10 ? centeredStrikes : liveStrikes.slice(0, 31);
+
           const result = {
             symbol: validSymbol,
             expiryDate: targetExpiry,
@@ -275,7 +322,7 @@ class OptionChainService {
             spotPrice,
             isSimulated: false,
             analytics,
-            strikes: liveStrikes,
+            strikes: displayStrikes,
           };
 
           this.cache.set(cacheKey, { timestamp: Date.now(), data: result });

@@ -5,6 +5,7 @@ import {
   calculateUpstoxExpiry,
   revokeUpstoxToken,
 } from '../services/upstoxAuthService.js';
+import { marketDataFeedService } from '../services/marketDataFeedService.js';
 import { config } from '../config/env.js';
 
 /**
@@ -81,6 +82,14 @@ export const handleOAuthCallback = async (req, res) => {
     });
 
     console.log(`[OAuth Success] Access token stored for user: ${userId} (${userName})`);
+
+    // Switch market feed to Live Upstox stream
+    try {
+      await marketDataFeedService.startFeed();
+    } catch (feedErr) {
+      console.warn(`[OAuth Feed Switch Warning] ${feedErr.message}`);
+    }
+
     return res.redirect(`${config.clientUrl}?auth=success&user=${encodeURIComponent(userName)}`);
   } catch (err) {
     const errorDetails =
@@ -161,6 +170,9 @@ export const logout = async (req, res) => {
       await activeAuth.save();
     }
 
+    // Switch back to Sandbox Feed
+    marketDataFeedService.startSimulatedFeed();
+
     return res.status(200).json({
       success: true,
       message: 'Broker session terminated successfully.',
@@ -190,6 +202,9 @@ export const simulateMockAuth = async (req, res) => {
       isSimulated: true,
       metadata: { mode: 'test_sandbox' },
     });
+
+    // Switch to Sandbox Feed
+    marketDataFeedService.startSimulatedFeed();
 
     return res.status(200).json({
       success: true,

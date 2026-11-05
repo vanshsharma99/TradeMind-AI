@@ -44,13 +44,14 @@ class MarketDataFeedService extends EventEmitter {
    * Connects to official Upstox Market Data Feed V3 WebSocket
    */
   async connectLiveUpstoxFeed(accessToken) {
+    stopSandboxFeed();
     this.status = 'connecting';
     this.mode = 'live';
     this.emitStatus();
 
     try {
-      // Step 1: Request authenticated WebSocket redirect URL from Upstox
-      const authRes = await axios.get('https://api.upstox.com/v2/feed/market-data-feed/authorize', {
+      // Step 1: Request authenticated WebSocket redirect URL from Upstox (v3 endpoint)
+      const authRes = await axios.get('https://api.upstox.com/v3/feed/market-data-feed/authorize', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           Accept: 'application/json',
@@ -78,6 +79,9 @@ class MarketDataFeedService extends EventEmitter {
         // Subscribe to current instruments
         this.sendSubscriptionMessage();
       });
+
+      // Hydrate initial real quotes immediately
+      await this.fetchLiveQuotesSnapshot(accessToken);
 
       this.ws.on('message', async (data) => {
         try {
@@ -124,6 +128,51 @@ class MarketDataFeedService extends EventEmitter {
     } else {
       console.warn('[Market Feed] Max live reconnect attempts reached. Switching to Sandbox Mode.');
       this.startSimulatedFeed();
+    }
+  }
+
+  /**
+   * Fetches initial live OHLC quotes snapshot from Upstox REST API
+   * Ensures UI immediately has authentic market prices even before the first tick or outside market hours
+   */
+  async fetchLiveQuotesSnapshot(accessToken) {
+    try {
+      const keys = Array.from(this.subscribedInstruments).join(',');
+      const res = await axios.get(`https://api.upstox.com/v2/market-quote/quotes?instrument_key=${encodeURIComponent(keys)}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: 'application/json',
+        },
+        timeout: 8000,
+      });
+
+      if (res.data?.data) {
+        for (const [rawKey, quote] of Object.entries(res.data.data)) {
+          const normalizedKey = rawKey.replace(':', '|');
+          const tick = {
+            instrumentKey: normalizedKey,
+            ltp: quote.last_price || quote.ohlc?.close || 0,
+            closePrice: quote.ohlc?.close || 0,
+            openPrice: quote.ohlc?.open || 0,
+            highPrice: quote.ohlc?.high || 0,
+            lowPrice: quote.ohlc?.low || 0,
+            change: quote.net_change || 0,
+            changePercent: quote.ohlc?.close ? Number(((quote.net_change / quote.ohlc.close) * 100).toFixed(2)) : 0,
+            volume: quote.volume || 0,
+            oi: quote.oi || 0,
+            greeks: null,
+            depth: null,
+            timestamp: Date.now(),
+            isSimulated: false,
+          };
+
+          this.latestTicks.set(normalizedKey, tick);
+          this.emit('market:tick', tick);
+        }
+        console.log(`[Market Feed] Hydrated ${this.latestTicks.size} live market instruments from Upstox Quotes.`);
+      }
+    } catch (err) {
+      console.warn(`[Market Feed Snapshot Warning] ${err.message}`);
     }
   }
 
