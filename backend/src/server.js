@@ -7,6 +7,8 @@ import healthRoutes from './routes/healthRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import marketRoutes from './routes/marketRoutes.js';
 import optionRoutes from './routes/optionRoutes.js';
+import indicatorRoutes from './routes/indicatorRoutes.js';
+import aiSignalRoutes from './routes/aiSignalRoutes.js';
 import { initSocketServer, stopSocketServer } from './websocket/socketServer.js';
 import { marketDataFeedService } from './services/marketDataFeedService.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
@@ -34,6 +36,8 @@ app.use('/api', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/market', marketRoutes);
 app.use('/api/v1/options', optionRoutes);
+app.use('/api/v1/indicators', indicatorRoutes);
+app.use('/api/v1/ai', aiSignalRoutes);
 
 // Root route
 app.get('/', (req, res) => {
