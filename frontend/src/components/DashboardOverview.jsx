@@ -14,7 +14,8 @@ import {
   ChevronDown, 
   ChevronUp, 
   Code,
-  AlertCircle
+  AlertCircle,
+  Gauge
 } from 'lucide-react';
 import BrokerConnectionCard from './BrokerConnectionCard.jsx';
 import MarketFeedStatusCard from './MarketFeedStatusCard.jsx';
@@ -253,6 +254,22 @@ export default function DashboardOverview({
               <Layers className="h-3.5 w-3.5 text-blue-400" />
               <span>Option Chain</span>
             </button>
+
+            <button
+              onClick={() => onNavigateTab('indicators')}
+              className="px-3.5 py-2 rounded-lg bg-[#0B0E14] hover:bg-[#1A2234] border border-[#1E2638] text-slate-300 hover:text-white text-xs font-medium transition flex items-center gap-1.5"
+            >
+              <Gauge className="h-3.5 w-3.5 text-purple-400" />
+              <span>Indicators</span>
+            </button>
+
+            <button
+              onClick={() => onNavigateTab('ai-signals')}
+              className="px-3.5 py-2 rounded-lg bg-gradient-to-r from-purple-600/20 to-blue-600/20 hover:from-purple-600/30 hover:to-blue-600/30 border border-purple-500/30 text-purple-300 hover:text-white text-xs font-semibold transition flex items-center gap-1.5"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+              <span>AI Signals</span>
+            </button>
           </div>
         </div>
 
@@ -312,7 +329,7 @@ export default function DashboardOverview({
           <div className="flex items-center space-x-2">
             <h2 className="text-base font-semibold text-white">Project Implementation Roadmap</h2>
             <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              Phase 6 Completed
+              Phase 8 Completed
             </span>
           </div>
           <span className="text-xs text-slate-400">11 Controlled Incremental Phases</span>
@@ -326,9 +343,9 @@ export default function DashboardOverview({
             { phase: 'Phase 4', title: 'Live NIFTY Market Data Streaming', status: 'completed', desc: 'Tick decoding, real-time broadcasting to client' },
             { phase: 'Phase 5', title: 'Option Chain Integration', status: 'completed', desc: 'Greeks, PCR, strike-wise Open Interest analysis' },
             { phase: 'Phase 6', title: 'TradingView Charts & Full UI', status: 'completed', desc: 'Lightweight charts, orderbook depth, unified dark theme terminal' },
-            { phase: 'Phase 7', title: 'Technical Indicators (Python/JS)', status: 'next', desc: 'RSI, EMA 9/21, VWAP, MACD, Volume Profile' },
-            { phase: 'Phase 8', title: 'AI Decision Engine', status: 'pending', desc: 'Deterministic signal rules + AI contextual explanations' },
-            { phase: 'Phase 9', title: 'Backtesting Engine', status: 'pending', desc: 'Historical simulation and win-rate validation' },
+            { phase: 'Phase 7', title: 'Technical Indicators (Python/JS)', status: 'completed', desc: 'RSI, EMA 9/21, VWAP, MACD, Volume Profile, Confluence Score' },
+            { phase: 'Phase 8', title: 'AI Decision Engine', status: 'completed', desc: 'Autonomous agent, multi-modal reasoning, structured JSON signals' },
+            { phase: 'Phase 9', title: 'Backtesting Engine', status: 'next', desc: 'Historical simulation and win-rate validation' },
             { phase: 'Phase 10', title: 'Paper Trading Engine', status: 'pending', desc: 'Virtual portfolio, simulated fills, slippage, PnL' },
             { phase: 'Phase 11', title: 'Optimization & Security Hardening', status: 'pending', desc: 'Rate limiting, monitoring, deployment readiness' },
           ].map((item, idx) => (

@@ -9,12 +9,14 @@ import {
   BarChart3, 
   Sparkles,
   Radio,
-  ArrowRight
+  ArrowRight,
+  Gauge
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import DashboardOverview from './components/DashboardOverview.jsx';
 import LiveMarketView from './components/LiveMarketView.jsx';
 import OptionChainView from './components/OptionChainView.jsx';
+import TechnicalIndicatorsView from './components/TechnicalIndicatorsView.jsx';
 import AiSignalsView from './components/AiSignalsView.jsx';
 import PaperTradingView from './components/PaperTradingView.jsx';
 
@@ -113,7 +115,8 @@ export default function App() {
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3, status: 'Active (Phase 6)' },
     { id: 'live-market', label: 'Live Market', icon: TrendingUp, status: 'Active (Phase 4)' },
     { id: 'option-chain', label: 'Option Chain', icon: Layers, status: 'Active (Phase 5)' },
-    { id: 'ai-signals', label: 'AI Signals', icon: Sparkles, status: 'Phase 8' },
+    { id: 'indicators', label: 'Indicators', icon: Gauge, status: 'Active (Phase 7)' },
+    { id: 'ai-signals', label: 'AI Signals', icon: Sparkles, status: 'Active (Phase 8)' },
     { id: 'paper-trading', label: 'Paper Trading', icon: Activity, status: 'Phase 10' },
   ];
 
@@ -130,8 +133,8 @@ export default function App() {
               <span className="text-lg md:text-xl font-bold tracking-tight text-white">
                 TradeMind<span className="text-blue-500">.AI</span>
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                Phase 6 Operational
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                Phase 8 Operational
               </span>
             </div>
             <p className="text-[11px] text-slate-400 hidden sm:block">
@@ -293,8 +296,13 @@ export default function App() {
             <LiveMarketView />
           ) : activeTab === 'option-chain' ? (
             <OptionChainView />
+          ) : activeTab === 'indicators' ? (
+            <TechnicalIndicatorsView />
           ) : activeTab === 'ai-signals' ? (
-            <AiSignalsView onNavigateToMarket={() => setActiveTab('live-market')} />
+            <AiSignalsView 
+              onNavigateToMarket={() => setActiveTab('live-market')} 
+              onNavigateToPaperTrading={() => setActiveTab('paper-trading')} 
+            />
           ) : activeTab === 'paper-trading' ? (
             <PaperTradingView onNavigateToOptionChain={() => setActiveTab('option-chain')} />
           ) : (
