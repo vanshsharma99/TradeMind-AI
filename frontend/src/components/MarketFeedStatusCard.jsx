@@ -112,9 +112,14 @@ export default function MarketFeedStatusCard() {
             </span>
           )}
 
-          {feedStatus?.isSimulated && (
+          {feedStatus?.isSimulated ? (
             <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">
               Sandbox Stream (1 Hz)
+            </span>
+          ) : (
+            <span className="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping mr-1.5" />
+              Live NSE Stream (V3)
             </span>
           )}
         </div>

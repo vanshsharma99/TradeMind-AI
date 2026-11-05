@@ -139,6 +139,18 @@ export default function OptionChainView() {
             </span>
           </div>
 
+          {/* Live / Simulated Data Badge */}
+          {chainData?.isSimulated ? (
+            <span className="text-[10px] font-mono font-semibold px-2.5 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              SIMULATED CHAIN
+            </span>
+          ) : (
+            <span className="text-[10px] font-mono font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 shadow-sm shadow-emerald-500/10">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              LIVE NSE OPTION CHAIN
+            </span>
+          )}
+
           {/* Refresh Action */}
           <button
             onClick={fetchOptionChain}
